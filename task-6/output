@@ -1,0 +1,83 @@
+**Schema (MySQL v5.7)**
+
+    
+
+---
+
+**Query #1**
+
+    -- Create Orders Table with Date
+    CREATE TABLE Orders (
+        order_id INT PRIMARY KEY,
+        customer_name VARCHAR(100),
+        order_date DATE,
+        amount INT
+    );
+
+There are no results to be displayed.
+
+---
+**Query #2**
+
+    -- Insert Data (mix of old + recent dates)
+    INSERT INTO Orders (order_id, customer_name, order_date, amount) VALUES
+    (1, 'Alice', CURDATE() - INTERVAL 10 DAY, 1200),
+    (2, 'Bob', CURDATE() - INTERVAL 40 DAY, 800),
+    (3, 'Charlie', CURDATE() - INTERVAL 5 DAY, 600),
+    (4, 'David', CURDATE() - INTERVAL 20 DAY, 1500),
+    (5, 'Eve', CURDATE() - INTERVAL 60 DAY, 700);
+
+There are no results to be displayed.
+
+---
+**Query #3**
+
+    -- 1. Date Difference (DATEDIFF)
+    -- Days since order was placed
+    
+    SELECT 
+        customer_name,
+        order_date,
+        DATEDIFF(CURDATE(), order_date) AS days_ago
+    FROM Orders;
+
+| customer_name | order_date | days_ago |
+| ------------- | ---------- | -------- |
+| Alice         | 2026-03-24 | 10       |
+| Bob           | 2026-02-22 | 40       |
+| Charlie       | 2026-03-29 | 5        |
+| David         | 2026-03-14 | 20       |
+| Eve           | 2026-02-02 | 60       |
+
+---
+**Query #4**
+
+    SELECT *
+    FROM Orders
+    WHERE order_date >= CURDATE() - INTERVAL 30 DAY;
+
+| order_id | customer_name | order_date | amount |
+| -------- | ------------- | ---------- | ------ |
+| 1        | Alice         | 2026-03-24 | 1200   |
+| 3        | Charlie       | 2026-03-29 | 600    |
+| 4        | David         | 2026-03-14 | 1500   |
+
+---
+**Query #5**
+
+    SELECT 
+        customer_name,
+        DATE_FORMAT(order_date, '%d-%m-%Y') AS formatted_date
+    FROM Orders;
+
+| customer_name | formatted_date |
+| ------------- | -------------- |
+| Alice         | 24-03-2026     |
+| Bob           | 22-02-2026     |
+| Charlie       | 29-03-2026     |
+| David         | 14-03-2026     |
+| Eve           | 02-02-2026     |
+
+---
+
+[View on DB Fiddle](https://www.db-fiddle.com/f/wRHZhKkgLNCR7V9gRuy5ky/1)
