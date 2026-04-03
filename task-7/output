@@ -1,0 +1,165 @@
+**Schema (MySQL v9)**
+
+    
+
+---
+
+**Query #1**
+
+    -- Create Employees Table
+    CREATE TABLE Employees (
+        emp_id INT PRIMARY KEY,
+        name VARCHAR(100),
+        department VARCHAR(100),
+        salary INT
+    );
+
+There are no results to be displayed.
+
+---
+**Query #2**
+
+    -- Insert Data
+    INSERT INTO Employees (emp_id, name, department, salary) VALUES
+    (1, 'Alice', 'HR', 40000),
+    (2, 'Bob', 'HR', 50000),
+    (3, 'Charlie', 'HR', 50000),
+    (4, 'David', 'IT', 70000),
+    (5, 'Eve', 'IT', 60000),
+    (6, 'Frank', 'IT', 60000);
+
+There are no results to be displayed.
+
+---
+**Query #3**
+
+    -- =====================================
+    -- 1. ROW_NUMBER()
+    -- Unique ranking within each department
+    -- =====================================
+    SELECT 
+        name,
+        department,
+        salary,
+        ROW_NUMBER() OVER (
+            PARTITION BY department
+            ORDER BY salary DESC
+        ) AS row_num
+    FROM Employees;
+
+| name    | department | salary | row_num |
+| ------- | ---------- | ------ | ------- |
+| Bob     | HR         | 50000  | 1       |
+| Charlie | HR         | 50000  | 2       |
+| Alice   | HR         | 40000  | 3       |
+| David   | IT         | 70000  | 1       |
+| Eve     | IT         | 60000  | 2       |
+| Frank   | IT         | 60000  | 3       |
+
+---
+**Query #4**
+
+    -- =====================================
+    -- 2. RANK()
+    -- Same rank for ties, gaps in ranking
+    -- =====================================
+    SELECT 
+        name,
+        department,
+        salary,
+        RANK() OVER (
+            PARTITION BY department
+            ORDER BY salary DESC
+        ) AS rank_val
+    FROM Employees;
+
+| name    | department | salary | rank_val |
+| ------- | ---------- | ------ | -------- |
+| Bob     | HR         | 50000  | 1        |
+| Charlie | HR         | 50000  | 1        |
+| Alice   | HR         | 40000  | 3        |
+| David   | IT         | 70000  | 1        |
+| Eve     | IT         | 60000  | 2        |
+| Frank   | IT         | 60000  | 2        |
+
+---
+**Query #5**
+
+    -- =====================================
+    -- 3. DENSE_RANK()
+    -- Same rank for ties, NO gaps
+    -- =====================================
+    SELECT 
+        name,
+        department,
+        salary,
+        DENSE_RANK() OVER (
+            PARTITION BY department
+            ORDER BY salary DESC
+        ) AS dense_rank_val
+    FROM Employees;
+
+| name    | department | salary | dense_rank_val |
+| ------- | ---------- | ------ | -------------- |
+| Bob     | HR         | 50000  | 1              |
+| Charlie | HR         | 50000  | 1              |
+| Alice   | HR         | 40000  | 2              |
+| David   | IT         | 70000  | 1              |
+| Eve     | IT         | 60000  | 2              |
+| Frank   | IT         | 60000  | 2              |
+
+---
+**Query #6**
+
+    -- =====================================
+    -- 4. LAG()
+    -- Previous employee salary in same dept
+    -- =====================================
+    SELECT 
+        name,
+        department,
+        salary,
+        LAG(salary) OVER (
+            PARTITION BY department
+            ORDER BY salary DESC
+        ) AS prev_salary
+    FROM Employees;
+
+| name    | department | salary | prev_salary |
+| ------- | ---------- | ------ | ----------- |
+| Bob     | HR         | 50000  |             |
+| Charlie | HR         | 50000  | 50000       |
+| Alice   | HR         | 40000  | 50000       |
+| David   | IT         | 70000  |             |
+| Eve     | IT         | 60000  | 70000       |
+| Frank   | IT         | 60000  | 60000       |
+
+---
+**Query #7**
+
+    -- =====================================
+    -- 5. LEAD()
+    -- Next employee salary in same dept
+    -- =====================================
+    SELECT 
+        name,
+        department,
+        salary,
+        LEAD(salary) OVER (
+            PARTITION BY department
+            ORDER BY salary DESC
+        ) AS next_salary
+    FROM Employees;
+
+| name    | department | salary | next_salary |
+| ------- | ---------- | ------ | ----------- |
+| Bob     | HR         | 50000  | 50000       |
+| Charlie | HR         | 50000  | 40000       |
+| Alice   | HR         | 40000  |             |
+| David   | IT         | 70000  | 60000       |
+| Eve     | IT         | 60000  | 60000       |
+| Frank   | IT         | 60000  |             |
+
+---
+
+[View on DB Fiddle](https://www.db-fiddle.com/f/wRHZhKkgLNCR7V9gRuy5ky/1)
